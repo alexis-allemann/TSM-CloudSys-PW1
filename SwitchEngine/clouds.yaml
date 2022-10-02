@@ -10,7 +10,8 @@ clouds:
   engines:
     auth:
       auth_url: https://keystone.cloud.switch.ch:5000/v3
-      username: "alexis.allemann@gmail.com"
+      username: "METTRE_EMAIL_ICI"
+      password: METTRE_API_TOKEN_ICI
       project_id: 462e8881828b4f8f8a9b2d7f47bf4241
       project_name: "Master-Cloud11"
       user_domain_name: "Default"
