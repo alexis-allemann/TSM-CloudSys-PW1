@@ -9,16 +9,6 @@ import google.auth.exceptions
 from google.api_core.extended_operation import ExtendedOperation
 from google.cloud import compute_v1
 
-script_back = f"""#!/bin/bash
-rm -rf TSM_CloudSys_back_pw1
-git clone git@github.com:EricB2A/TSM_CloudSys_back_pw1.git
-cd TSM_CloudSys_back_pw1
-git checkout google
-bundle install
-RAILS_ENV=production bundle exec rake db:create db:migrate db:seed
-rails s -e production -d
-"""
-
 
 def get_image_from_family(project: str, family: str) -> compute_v1.Image:
     """
@@ -187,7 +177,7 @@ def create_instance(
         access = compute_v1.AccessConfig()
         access.type_ = compute_v1.AccessConfig.Type.ONE_TO_ONE_NAT.name
         access.name = "External NAT"
-        access.network_tier = access.NetworkTier.PREMIUM.name
+        access.network_tier = access.NetworkTier.STANDARD.name
         if external_ipv4:
             access.nat_i_p = external_ipv4
         network_interface.access_configs = [access]
@@ -239,6 +229,20 @@ def create_instance(
     print(f"Instance {instance_name} created.")
     return instance_client.get(project=project_id, zone=zone, instance=instance_name)
 
+
+script_back = f"""#!/bin/bash
+rm -rf TSM_CloudSys_back_pw1
+git clone git@github.com:EricB2A/TSM_CloudSys_back_pw1.git
+cd TSM_CloudSys_back_pw1
+bundle install
+rm config/master.key
+rm config/credentials.yml.enc
+EDITOR="vim" bin/rails credentials:edit
+RAILS_ENV=production bundle exec rake db:create db:migrate db:seed
+rails s -e production -d
+"""
+
+BACKEND_IP = '35.216.179.167'
 credentials, project_id = google.auth.default()
 instance_name = "back-" + uuid.uuid4().hex[:10]
 instance_zone = "europe-west6-a"
@@ -253,4 +257,17 @@ metadata = [{
     "key": "startup-script",
     "value": script_back
 }]
-create_instance(project_id, instance_zone, instance_name, disks, metadata=metadata)
+create_instance(project_id, instance_zone, instance_name, disks, metadata=metadata, external_access=True,
+                external_ipv4=BACKEND_IP)
+
+script_front = f"""#!/bin/bash
+rm -rf TSM_CloudSys_front_pw1
+git clone git@github.com/alex-mottier/TSM_CloudSys_front_pw1
+cd TSM_CloudSys_front_pw1
+rm .env
+touch .env
+echo "VITE_BACKEND_URL=http://{BACKEND_IP}:3000/" > .env
+npm install
+npm run build
+cp -r dist/* /var/www/html
+"""
