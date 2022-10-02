@@ -8,6 +8,9 @@ import google.auth
 import google.auth.exceptions
 from google.api_core.extended_operation import ExtendedOperation
 from google.cloud import compute_v1
+import googleapiclient
+import googleapiclient.discovery
+
 
 
 def get_image_from_family(project: str, family: str) -> compute_v1.Image:
@@ -104,7 +107,7 @@ def wait_for_extended_operation(
     return result
 
 
-def create_instance(
+def _create_instance(
         project_id: str,
         zone: str,
         instance_name: str,
@@ -222,27 +225,65 @@ def create_instance(
     # Wait for the create operation to complete.
     print(f"Creating the {instance_name} instance in {zone}...")
 
-    operation = instance_client.insert(metadata=metadata, project=project_id, zone=zone, instance_resource=instance)
+    operation = instance_client.insert(project=project_id, zone=zone, instance_resource=instance, metadata=metadata)
+
 
     wait_for_extended_operation(operation, "instance creation")
 
     print(f"Instance {instance_name} created.")
     return instance_client.get(project=project_id, zone=zone, instance=instance_name)
 
+def create_instance(compute, project, zone, name, image, machine, ip, ip_public, tags=[], metadata=[]):
+    config = {
+        'name': name,
+        'machineType': "zones/%s/machineTypes/%s" % (zone, machine),
+        'disks': [
+            {
+                'initializeParams': {
+                    "sourceImage": image
+                },
+                "boot": True
+            }
+        ],
+        'tags': {
+            "items": tags
+        },
+        "networkInterfaces": [
+            {
+                'network': 'global/networks/default',
+                'networkIP': ip,
+                'accessConfigs': [
+                    {
+                        'type': 'ONE_TO_ONE_NAT',
+                        'name': 'External NAT',
+                        'natIP': ip_public,
+                        'networkTier': 'STANDARD',
+                    }
+                ]
+            }
+        ],
+        "metadata": {
+            "items": metadata
+        }
+    }
+    return compute.instances().insert(
+        project=project,
+        zone=zone,
+        body=config).execute()
 
-script_back = f"""#!/bin/bash
-rm -rf TSM_CloudSys_back_pw1
-git clone git@github.com:EricB2A/TSM_CloudSys_back_pw1.git
+
+
+script_back = f"""#! /bin/bash
+cd /tmp
+git clone https://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@github.com/EricB2A/TSM_CloudSys_back_pw1.git 2> /tmp/clone
 cd TSM_CloudSys_back_pw1
-bundle install
-rm config/master.key
-rm config/credentials.yml.enc
-EDITOR="vim" bin/rails credentials:edit
-RAILS_ENV=production bundle exec rake db:create db:migrate db:seed
-rails s -e production -d
+git checkout google > /tmp/checkout_google
+/home/amottier/.rbenv/shims/bundle install > /tmp/bundle_install
+RAILS_ENV=production /home/amottier/.rbenv/shims/bundle exec rake db:create db:migrate db:seed > /tmp/migrate
+/home/amottier/.rbenv/shims/rails s -e production -d  > /tmp/rails_s
 """
 
-BACKEND_IP = '35.216.179.167'
+BACKEND_IP = '35.216.236.84'
 credentials, project_id = google.auth.default()
 instance_name = "back-" + uuid.uuid4().hex[:10]
 instance_zone = "europe-west6-a"
@@ -253,12 +294,21 @@ newest_debian = get_image_from_family(
 disk_type = f"zones/{instance_zone}/diskTypes/pd-standard"
 disks = [disk_from_image(disk_type, 10, True, newest_debian.self_link)]
 print(project_id)
-metadata = [{
-    "key": "startup-script",
-    "value": script_back
-}]
-create_instance(project_id, instance_zone, instance_name, disks, metadata=metadata, external_access=True,
-                external_ipv4=BACKEND_IP)
+metadata = [
+    {
+        "key": "startup-script",
+        "value": script_back
+    },
+]
+
+# create_instance(compute, project, zone, name, image, machine, ip, ip_public, tags=[], metadata=[])
+compute = googleapiclient.discovery.build('compute', 'v1')
+image="projects/cloudsys-pw1/global/images/image-back"
+create_instance(compute, project_id, instance_zone, instance_name, image, "e2-micro", "10.172.0.4", BACKEND_IP, metadata=metadata, tags= ['http-server', 'https-server', 'tcp3000'])
+#create_instance(project_id, instance_zone, instance_name, disks,
+#                metadata=metadata,
+#                external_access=True,
+#                external_ipv4=BACKEND_IP)
 
 script_front = f"""#!/bin/bash
 rm -rf TSM_CloudSys_front_pw1
