@@ -285,16 +285,9 @@ RAILS_ENV=production /home/amottier/.rbenv/shims/bundle exec rake db:create db:m
 
 BACKEND_IP = '35.216.236.84'
 credentials, project_id = google.auth.default()
-instance_name = "back-" + uuid.uuid4().hex[:10]
+instance_name_back = "back-" + uuid.uuid4().hex[:10]
 instance_zone = "europe-west6-a"
-
-newest_debian = get_image_from_family(
-    project="cloudsys-pw1", family="image-back"
-)
-disk_type = f"zones/{instance_zone}/diskTypes/pd-standard"
-disks = [disk_from_image(disk_type, 10, True, newest_debian.self_link)]
-print(project_id)
-metadata = [
+metadata_back = [
     {
         "key": "startup-script",
         "value": script_back
@@ -303,21 +296,56 @@ metadata = [
 
 # create_instance(compute, project, zone, name, image, machine, ip, ip_public, tags=[], metadata=[])
 compute = googleapiclient.discovery.build('compute', 'v1')
-image="projects/cloudsys-pw1/global/images/image-back"
-create_instance(compute, project_id, instance_zone, instance_name, image, "e2-micro", "10.172.0.4", BACKEND_IP, metadata=metadata, tags= ['http-server', 'https-server', 'tcp3000'])
-#create_instance(project_id, instance_zone, instance_name, disks,
-#                metadata=metadata,
-#                external_access=True,
-#                external_ipv4=BACKEND_IP)
+image_back="projects/cloudsys-pw1/global/images/image-back"
+create_instance(compute, project_id, instance_zone, instance_name_back, image_back, "e2-micro", "10.172.0.4", BACKEND_IP,
+                metadata=metadata_back, tags= ['http-server', 'https-server', 'tcp3000'])
 
-script_front = f"""#!/bin/bash
-rm -rf TSM_CloudSys_front_pw1
-git clone git@github.com/alex-mottier/TSM_CloudSys_front_pw1
+#########################################
+# FRONT
+#########################################
+_script_front = f"""#!/bin/bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash > /tmp/curl 2> /tmp/curl_error
+nvm install v16.14.0 > /tmp/nvm_install 2> /tmp/nvm_install_error
+which npm > /tmp/which_npm 2> /tmp/which_npm_error
+cd /tmp
+rm -rf TSM_CloudSys_front_pw1  
+git clone https://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@github.com/alex-mottier/TSM_CloudSys_front_pw1.git > /tmp/clone 2> /tmp_clone_error
 cd TSM_CloudSys_front_pw1
 rm .env
 touch .env
-echo "VITE_BACKEND_URL=http://{BACKEND_IP}:3000/" > .env
-npm install
-npm run build
+echo "VITE_BACKEND_URL=http://{BACKEND_IP}:3000/" > .env 
+echo "VITE_BACKEND_URL=http://{BACKEND_IP}:3000/" > /tmp/emv_file
+npm install 2> /tmp/npm_install_error > /build_install
+npm run build 2> /tmp/npm_build_error > /npm_build
 cp -r dist/* /var/www/html
 """
+
+script_front = f"""#!/bin/bash
+mkdir /tmp/git
+cd /tmp/git
+git clone https://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@github.com/alex-mottier/TSM_CloudSys_front_pw1.git
+cd TSM_CloudSys_front_pw1
+rm .env
+touch .env
+echo "VITE_BACKEND_URL=http://{BACKEND_IP}:3000" > .env
+curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh -o install_nvm.sh 2> /tmp/test0
+bash install_nvm.sh 2> /tmp/test1
+NVM_DIR="$HOME/.nvm" 2> /tmp/test2
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  2> /tmp/test3
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"  2> /tmp/test4
+nvm install node --latest 2> /tmp/test5
+npm install 2> /tmp/test6
+npm run build 2> /tmp/test7
+cp -r dist/* /var/www/html
+"""
+instance_name_front = "front-" + uuid.uuid4().hex[:10]
+image_front="projects/cloudsys-pw1/global/images/image-front"
+metadata_front = [
+    {
+        "key": "startup-script",
+        "value": script_front
+    },
+]
+FRONTEND_IP="35.216.179.167"
+create_instance(compute, project_id, instance_zone, instance_name_front, image_front, "e2-micro", "10.172.0.5", FRONTEND_IP,
+                metadata=metadata_front, tags= ['http-server', 'https-server'])
