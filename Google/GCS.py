@@ -54,12 +54,15 @@ def create_instance(compute, project, zone, name, image, machine, ip, ip_public,
 #########################################
 script_back = f"""#! /bin/bash
 cd /tmp
-git clone https://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@github.com/EricB2A/TSM_CloudSys_back_pw1.git 2> /tmp/clone
+git clone https://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@github.com/EricB2A/TSM_CloudSys_back_pw1.git 
 cd TSM_CloudSys_back_pw1
-git checkout google > /tmp/checkout_google
-/home/amottier/.rbenv/shims/bundle install > /tmp/bundle_install
-RAILS_ENV=production /home/amottier/.rbenv/shims/bundle exec rake db:create db:migrate db:seed > /tmp/migrate
-/home/amottier/.rbenv/shims/rails s -e production -d  > /tmp/rails_s
+git stash
+git fetch --all
+git checkout google
+git pull
+/home/amottier/.rbenv/shims/bundle install 
+RAILS_ENV=production /home/amottier/.rbenv/shims/bundle exec rake db:create db:migrate db:seed 
+/home/amottier/.rbenv/shims/rails s -e production -d 
 """
 
 BACKEND_IP = '35.216.236.84'
