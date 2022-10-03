@@ -54,7 +54,7 @@ def create_instance(compute, project, zone, name, image, machine, ip, ip_public,
 #########################################
 script_back = f"""#! /bin/bash
 cd /tmp
-git clone https://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@github.com/EricB2A/TSM_CloudSys_back_pw1.git 2> /tmp/clone
+git clone https://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@github.com/EricB2A/TSM_CloudSys_back_pw1.git 2> /tmp/clone
 cd TSM_CloudSys_back_pw1
 git checkout google > /tmp/checkout_google
 /home/amottier/.rbenv/shims/bundle install > /tmp/bundle_install
@@ -84,7 +84,7 @@ create_instance(compute, project_id, instance_zone, instance_name_back, image_ba
 script_front = f"""#!/bin/bash
 mkdir /tmp/git
 cd /tmp/git
-git clone https://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@github.com/alex-mottier/TSM_CloudSys_front_pw1.git
+git clone https://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@github.com/alex-mottier/TSM_CloudSys_front_pw1.git
 cd TSM_CloudSys_front_pw1
 rm .env
 touch .env
