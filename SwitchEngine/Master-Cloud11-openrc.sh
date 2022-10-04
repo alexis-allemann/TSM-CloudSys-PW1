@@ -22,7 +22,7 @@ unset OS_TENANT_ID
 unset OS_TENANT_NAME
 # In addition to the owning entity (tenant), OpenStack stores the entity
 # performing the action as the **user**.
-export OS_USERNAME="METTRE_EMAIL_ICI"
+export OS_USERNAME="alexis.allemann@gmail.com"
 export OS_USER_DOMAIN_NAME="Default"
 if [ -z "$OS_USER_DOMAIN_NAME" ]; then unset OS_USER_DOMAIN_NAME; fi
 ##
@@ -31,7 +31,7 @@ if [ -z "$OS_USER_DOMAIN_NAME" ]; then unset OS_USER_DOMAIN_NAME; fi
 ##
 echo "Enter your SWITCHengines API credentials for project $OS_PROJECT_NAME as user $OS_USERNAME: "
 read -sr API_KEY_INPUT
-export OS_PASSWORD="METTRE_API_TOKEN_ICI"
+export OS_PASSWORD="6c7c5d1b113893be4b02f72aba36e7e8"
 # If your configuration has multiple regions, we set that information here.
 export OS_REGION_NAME="ZH"
 # Don't leave a blank variable, unset it if it was empty
