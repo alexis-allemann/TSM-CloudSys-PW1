@@ -10,8 +10,8 @@ clouds:
   engines:
     auth:
       auth_url: https://keystone.cloud.switch.ch:5000/v3
-      username: "alexis.allemann@gmail.com"
-      password: 6c7c5d1b113893be4b02f72aba36e7e8
+      username: "EMAIL"
+      password: API_KEY
       project_id: 462e8881828b4f8f8a9b2d7f47bf4241
       project_name: "Master-Cloud11"
       user_domain_name: "Default"
