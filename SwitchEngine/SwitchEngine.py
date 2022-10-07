@@ -44,7 +44,9 @@ server = conn.compute.create_server(
     user_data=USER_DATA_B64.decode('utf-8')
 )
 conn.compute.wait_for_server(server)
-BACKEND_IP = conn.add_auto_ip(server)
+BACKEND_IP = conn.add_auto_ip(server, wait=True)
+
+print('Backend IP : {}'.format(BACKEND_IP))
 
 USER_DATA = f"""#!/bin/bash
 mkdir /tmp/git
@@ -64,6 +66,7 @@ npm install 2> /tmp/test6
 npm run build 2> /tmp/test7
 cp -r dist/* /var/www/html
 """
+
 message_bytes = USER_DATA.encode('ascii')
 USER_DATA_B64 = base64.b64encode(message_bytes)
 
@@ -78,4 +81,5 @@ server = conn.compute.create_server(
     user_data=USER_DATA_B64.decode('utf-8')
 )
 conn.compute.wait_for_server(server)
-conn.add_auto_ip(server)
+FRONTEND_IP = conn.add_auto_ip(server, wait=True)
+print('You can now connect to http://{}'.format(FRONTEND_IP))
