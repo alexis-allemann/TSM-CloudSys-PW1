@@ -6,12 +6,38 @@ import re
 import sys
 import uuid
 import warnings
+import time
 from google.api_core.extended_operation import ExtendedOperation
 from google.cloud import compute_v1
 from typing import Any, List
 
+## export GOOGLE_APPLICATION_CREDENTIALS='Google/cloudsys-pw1-4e0730f1e2eb.json'
+def create_address(compute, project, zone, name):
+    config = {
+        "name": name,
+        "networkTier": "STANDARD",
+        "region": f"projects/{project}/regions/{zone}"
+    }
 
-def create_instance(compute, project, zone, name, image, machine, ip, ip_public, tags=[], metadata=[]):
+    return compute.addresses().insert(
+        project=project,
+        region=zone,
+        body=config).execute()
+
+def get_ip_address(compute, project, zone, name):
+    address = compute.addresses().get(
+        project=project,
+        region=zone,
+        address=name).execute()
+
+    while(len(address) <= 10):
+        address = compute.addresses().get(
+            project=project,
+            region=zone,
+            address=name).execute()
+
+    return address["address"]
+def create_instance(compute, project, zone, name, image, machine, ip_public, tags=[], metadata=[]):
     config = {
         'name': name,
         'machineType': "zones/%s/machineTypes/%s" % (zone, machine),
@@ -29,7 +55,6 @@ def create_instance(compute, project, zone, name, image, machine, ip, ip_public,
         "networkInterfaces": [
             {
                 'network': 'global/networks/default',
-                'networkIP': ip,
                 'accessConfigs': [
                     {
                         'type': 'ONE_TO_ONE_NAT',
@@ -65,20 +90,30 @@ RAILS_ENV=production /home/amottier/.rbenv/shims/bundle exec rake db:create db:m
 /home/amottier/.rbenv/shims/rails s -e production -d 
 """
 
-BACKEND_IP = '35.216.236.84'
 credentials, project_id = google.auth.default()
 instance_name_back = "back-" + uuid.uuid4().hex[:10]
 instance_zone = "europe-west6-a"
+address_zone = "europe-west6"
 metadata_back = [
     {
         "key": "startup-script",
         "value": script_back
     },
 ]
-
+print("Connection to Google API")
 compute = googleapiclient.discovery.build('compute', 'v1')
 image_back="projects/cloudsys-pw1/global/images/image-back"
-create_instance(compute, project_id, instance_zone, instance_name_back, image_back, "e2-micro", "10.172.0.4", BACKEND_IP,
+address_name_back = f"back-address-{uuid.uuid4().hex[:10]}"
+print(f"Project : {project_id}")
+print(f"Backend address creation : {address_name_back}")
+create_address(compute, project_id, address_zone, address_name_back)
+
+print(f"Retrieve backend address IP : {address_name_back}")
+address_back = get_ip_address(compute, project_id, address_zone, address_name_back)
+print(f"Backend IP Address : {address_back}")
+
+print(f"Backend instance creation : {instance_name_back}")
+create_instance(compute, project_id, instance_zone, instance_name_back, image_back, "e2-micro", address_back,
                 metadata=metadata_back, tags= ['http-server', 'https-server', 'tcp3000'])
 
 #########################################
@@ -91,7 +126,7 @@ git clone https://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@github.com/alex-motti
 cd TSM_CloudSys_front_pw1
 rm .env
 touch .env
-echo "VITE_BACKEND_URL=http://{BACKEND_IP}:3000" > .env
+echo "VITE_BACKEND_URL=http://{address_back}:3000" > .env
 curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.0/install.sh -o install_nvm.sh 2> /tmp/test0
 bash install_nvm.sh 2> /tmp/test1
 NVM_DIR="$HOME/.nvm" 2> /tmp/test2
@@ -110,6 +145,14 @@ metadata_front = [
         "value": script_front
     },
 ]
-FRONTEND_IP="35.216.179.167"
-create_instance(compute, project_id, instance_zone, instance_name_front, image_front, "e2-micro", "10.172.0.5", FRONTEND_IP,
+address_name_front = f"front-address-{uuid.uuid4().hex[:10]}"
+print(f"Frontend address creation : {address_name_front}")
+create_address(compute, project_id, address_zone, address_name_front)
+
+print(f"Retrieve frontend address IP : {address_name_front}")
+address_front = get_ip_address(compute, project_id, address_zone, address_name_front)
+print(f"Frontend IP Address : {address_front}")
+
+print(f"Frontend instance creation : {instance_name_front}")
+create_instance(compute, project_id, instance_zone, instance_name_front, image_front, "e2-micro", address_front,
                 metadata=metadata_front, tags= ['http-server', 'https-server'])
