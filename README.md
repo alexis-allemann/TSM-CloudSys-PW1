@@ -2,7 +2,7 @@
 ## GOOGLE
 1. set the env varible
 ```bash
-export GOOGLE_APPLICATION_CREDENTIALS='Google/your_mp'
+export GOOGLE_APPLICATION_CREDENTIALS='Google/your_private_key'
 ```
 2. install the depedencies
 ```bash
