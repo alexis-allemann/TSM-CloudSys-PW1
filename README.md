@@ -37,3 +37,14 @@ pip3 install openstacksdk
 ```bash
 python3 SwitchEngine/SwitchEngine.py
 ```
+## Exoscale
+1. Run the `pip install -r requirement.txt` command in a python environment
+
+2. Add your secret key
+```bash
+export EXOSCALE_API_KEY="EXOxxxxxxxxxxxxxxxxx" EXOSCALE_API_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+3. Run the script
+```bash
+python3 Exoscale/Exoscale.py
+```
