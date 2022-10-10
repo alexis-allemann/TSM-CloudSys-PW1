@@ -1,0 +1,4 @@
+google
+uuid
+typing
+google-api-python-client

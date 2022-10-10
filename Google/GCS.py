@@ -156,3 +156,4 @@ print(f"Frontend IP Address : {address_front}")
 print(f"Frontend instance creation : {instance_name_front}")
 create_instance(compute, project_id, instance_zone, instance_name_front, image_front, "e2-micro", address_front,
                 metadata=metadata_front, tags= ['http-server', 'https-server'])
+print("please wait a few minutes before accessing the frontend, at the following address", address_front)
