@@ -27,3 +27,13 @@ pip3 install -r AWS/requirements.txt
 ```bash
 python3 AWS/aws.py <your_key>
 ```
+## SwitchEngine
+1. Install the depedencies
+```bash
+pip3 install openstacksdk
+```
+2. change the credentials in clouds.yaml (username and password)
+3. run the script
+```bash
+python3 SwitchEngine/SwitchEngine.py
+```
