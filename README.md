@@ -2,7 +2,7 @@
 ## GOOGLE
 1. set the env varible
 ```bash
-export GOOGLE_APPLICATION_CREDENTIALS='Google/cloudsys-pw1-4e0730f1e2eb.json'
+export GOOGLE_APPLICATION_CREDENTIALS='Google/your_mp'
 ```
 2. install the depedencies
 ```bash
