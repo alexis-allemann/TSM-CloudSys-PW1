@@ -1,8 +1,5 @@
 # HOW TO USE
 ## GOOGLE
-### prerequis
-you need python3 and pip3 in order to run this script
-## run the script
 1. set the env varible
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS='Google/cloudsys-pw1-4e0730f1e2eb.json'
