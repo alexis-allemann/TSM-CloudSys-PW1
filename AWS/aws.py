@@ -1,15 +1,16 @@
 import boto3 
 import sys
-if len(sys.argv) != 2:
+if len(sys.argv) != 4:
   print("please provide your PEM key...")
-  print("python3 aws.py <path_to_file>")
+  print("python3 aws.py <path_to_pem> <aws_s3_access_key> <aws_s3_access_secret>")
   exit(1)
 
 
 # configuration
 INSTANCE_TYPE = "t2.micro"
 KEY_NAME = sys.argv[1]
-print("Your key : ", KEY_NAME)
+AWS_S3_ACCESS_KEY = sys.argv[2]
+AWS_S3_ACCESS_SECRET = sys.argv[3]
 
 BACKEND_AMI = "ami-0e7a9e257501dd3da"
 BACKEND_NAME = "Group11-Backend-Scripted"
@@ -30,11 +31,14 @@ git stash
 git fetch --all 
 git checkout aws
 git pull > /tmp/git_pull 
+export AWS_ACCESS_KEY={AWS_S3_ACCESS_KEY}
+export AWS_ACCESS_SECRET={AWS_S3_ACCESS_SECRET}
 /home/ubuntu/.rbenv/shims/bundle install
 RAILS_ENV=production /home/ubuntu/.rbenv/shims/bundle exec rake db:create db:migrate db:seed
 /home/ubuntu/.rbenv/shims/rails s -e production -d
 """
 
+print("Starting backend...")
 ec2 = boto3.resource('ec2')
 instances = ec2.create_instances(
     ImageId=BACKEND_AMI,
@@ -58,8 +62,11 @@ instances = ec2.create_instances(
 )
 instances[0].wait_until_running()
 instances[0].reload()
+print("Backend started..")
 BACKEND_IP = instances[0].public_ip_address
+print("Backend ip : ", BACKEND_IP)
 
+print("Starting frontend..")
 # frontend
 USER_DATA = f"""#!/bin/bash
 mkdir /tmp/git
@@ -101,3 +108,4 @@ ec2.create_instances(
     ],
     UserData=USER_DATA
 )
+print("Frontend started..")
