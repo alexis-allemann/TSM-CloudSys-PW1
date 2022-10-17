@@ -157,7 +157,7 @@ poller = compute_client.virtual_machines.begin_create_or_update(RESOURCE_GROUP_N
                     }
                 }]
             },
-            "userData": str(base64.b64encode(bytes('#!/bin/bash\ncd /tmp\ngit clone https://'+ str(os.environ["GITHUB_PAT"]) +'@github.com/EricB2A/TSM_CloudSys_back_pw1.git 2> /tmp/clone\ncd TSM_CloudSys_back_pw1\ngit stash\ngit fetch --all\ngit checkout azure\ngit pull > /tmp/git_pull\n/home/cloud-back/.rbenv/shims/bundle install > /tmp/bundle_install\nRAILS_ENV=production /home/cloud-back/.rbenv/shims/bundle exec rake db:create db:migrate db:seed > /tmp/migrate\n/home/cloud-back/.rbenv/shims/rails s -e production -d  > /tmp/rails_s\n', 'utf-8')))[2:-1]
+            "userData": str(base64.b64encode(bytes('#!/bin/bash\ncd /tmp\ngit clone https://'+ str(os.environ["GITHUB_PAT"]) +'@github.com/EricB2A/TSM_CloudSys_back_pw1.git 2> /tmp/clone\ncd TSM_CloudSys_back_pw1\ngit stash\ngit fetch --all\ngit checkout azure\ngit pull > /tmp/git_pull\n/home/cloud-back/.rbenv/shims/bundle install > /tmp/bundle_install\nexport AZURE_STORAGE_ACCESS_KEY='+ str(os.environ["AZURE_STORAGE_ACCESS_KEY"]) +'\nRAILS_ENV=production /home/cloud-back/.rbenv/shims/bundle exec rake db:create db:migrate db:seed > /tmp/migrate\n/home/cloud-back/.rbenv/shims/rails s -e production -d  > /tmp/rails_s\n', 'utf-8')))[2:-1]
         }                                                                      
     }
 )

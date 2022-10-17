@@ -15,7 +15,7 @@ python3 Google/GCS.py
 ## Azure
 Run the `pip install -r requirement.txt` command in a python environment
 
-Change the variables in the .env file if needed and add the `AZURE_CLIENT_SECRET` key (ask to Teo Ferrari to have the secret, or use yours)
+Change the variables in the .env file if needed and add the `AZURE_CLIENT_SECRET` key and the `AZURE_STORAGE_ACCESS_KEY` (ask to Teo Ferrari to have the secret, or use yours)
 
 Run the `python Azure.py` command
 ## AWS
